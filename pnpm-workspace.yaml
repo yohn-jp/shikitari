@@ -1,0 +1,6 @@
+# List native-build packages here if pnpm's default ignored-builds
+# safety net blocks them. esbuild is a transitive dependency of tsx.
+allowBuilds:
+  esbuild: true
+
+# Keep TypeScript below 7 until typescript-eslint supports it.

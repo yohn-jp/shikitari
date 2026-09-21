@@ -1,0 +1,214 @@
+policy:
+  id: shikitari.example
+  version: 1
+  title: Example TypeScript coding policy
+  domains:
+    - formatting
+    - naming
+  rules:
+    - id: formatting.indentation
+      domain: formatting
+      scope:
+        languages: [typescript]
+        file-kinds: [source]
+      requirement:
+        action: require
+        subject: indentation
+      value:
+        unit: spaces
+        width: 2
+      intent: Keep nesting depth visible and consistent across source files.
+
+    - id: formatting.quote-delimiter
+      domain: formatting
+      scope:
+        languages: [typescript]
+        constructs: [string-literal]
+      requirement:
+        action: prefer
+        subject: quote-delimiter
+      value:
+        delimiter: double
+      intent: Use one predictable delimiter while allowing an exception when it avoids unnecessary escaping.
+
+    - id: formatting.semicolon-termination
+      domain: formatting
+      scope:
+        languages: [typescript]
+        constructs: [statement]
+      requirement:
+        action: require
+        subject: semicolon-termination
+      value:
+        presence: present
+      intent: Make statement boundaries explicit.
+
+    - id: formatting.trailing-comma
+      domain: formatting
+      scope:
+        languages: [typescript]
+        constructs: [delimited-construct]
+      conditions:
+        all:
+          - field: construct
+            operator: in
+            value: [array, object, argument-list, parameter-list, import-list, export-list]
+          - field: layout
+            operator: equals
+            value: multiline
+      requirement:
+        action: require
+        subject: trailing-comma
+      value:
+        presence: present
+      intent: Make multiline edits produce small, stable diffs.
+
+    - id: formatting.line-width
+      domain: formatting
+      scope:
+        languages: [typescript]
+        file-kinds: [source]
+      requirement:
+        action: require
+        subject: line-width
+      value:
+        maximum: 100
+        unit: source-columns
+      constraints:
+        - field: measurement
+          operator: equals
+          value: rendered-line-columns
+      intent: Keep source readable in ordinary editor and review widths.
+
+    - id: formatting.line-ending
+      domain: formatting
+      scope:
+        file-kinds: [source]
+      requirement:
+        action: require
+        subject: line-ending
+      value:
+        sequence: lf
+      intent: Keep text representation consistent across operating systems.
+
+    - id: naming.form.casing
+      domain: naming
+      scope:
+        languages: [typescript]
+        symbol-kinds: [variable, constant, function, method, class, interface, type, enum, enum-member]
+      requirement:
+        action: require
+        subject: identifier-form
+      value:
+        casing-by-symbol-kind:
+          variable: camel
+          constant: upper-snake
+          function: camel
+          method: camel
+          class: pascal
+          interface: pascal
+          type: pascal
+          enum: pascal
+          enum-member: upper-snake
+        acronym-handling: treat-as-word
+      intent: Make a symbol's role visible from the written form of its name.
+
+    - id: naming.form.prefixes-and-suffixes
+      domain: naming
+      scope:
+        languages: [typescript]
+        symbol-kinds: [property, method, type]
+      requirement:
+        action: require
+        subject: identifier-prefix-or-suffix
+      value:
+        prefixes:
+          private-member: underscore
+        suffixes:
+          type-alias: type
+      intent: Mark conventions that communicate ownership or type-level meaning.
+
+    - id: naming.vocabulary.terms
+      domain: naming
+      scope:
+        languages: [typescript]
+        symbol-kinds: [variable, constant, function, method, property, type]
+      requirement:
+        action: prefer
+        subject: identifier-vocabulary
+      value:
+        terms:
+          - preferred: repository
+            forbidden: [repo]
+          - preferred: configuration
+            forbidden: [config]
+      intent: Prefer words that remain clear outside their local context.
+
+    - id: naming.semantics.retrieval-verbs
+      domain: naming
+      scope:
+        languages: [typescript]
+        symbol-kinds: [function, method]
+      conditions:
+        any:
+          - field: behavior
+            operator: equals
+            value: retrieve-known-value
+          - field: behavior
+            operator: equals
+            value: search-for-match
+      requirement:
+        action: require
+        subject: retrieval-verb
+      value:
+        terms:
+          - behavior: retrieve-known-value
+            preferred: get
+            forbidden: [find]
+          - behavior: search-for-match
+            preferred: find
+            forbidden: [get]
+      intent: Let the verb communicate whether lookup or search semantics apply.
+
+    - id: naming.terminology.domain-concepts
+      domain: naming
+      scope:
+        languages: [typescript]
+        symbol-kinds: [variable, constant, function, method, property, type]
+      requirement:
+        action: require
+        subject: domain-terminology
+      value:
+        concepts:
+          - id: customer
+            canonical-term: customer
+            forbidden-synonyms: [client]
+          - id: order
+            canonical-term: order
+            forbidden-synonyms: [purchase]
+      intent: Keep domain concepts named consistently across the codebase.
+
+    - id: naming.semantics.pluralization-and-booleans
+      domain: naming
+      scope:
+        languages: [typescript]
+        symbol-kinds: [variable, property, parameter, function, method]
+      conditions:
+        any:
+          - field: value-kind
+            operator: equals
+            value: collection
+          - field: value-kind
+            operator: equals
+            value: boolean
+      requirement:
+        action: require
+        subject: semantic-name-form
+      value:
+        collections:
+          plural: true
+        booleans:
+          state-prefix: is
+          capability-prefix: can
+          permission-prefix: may
+      intent: Make plurality and boolean meaning apparent from the name.

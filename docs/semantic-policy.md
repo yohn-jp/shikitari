@@ -161,44 +161,128 @@ configuration keys.
 
 ## Naming domain
 
-Naming rules keep four concerns distinct so that a casing preference is not
-mistaken for a vocabulary or domain-language rule.
+The Naming Canon is the semantic authority for names. Its five semantic rules
+are `form`, `lexicon`, `semantics`, `concepts`, and `constraints`; the
+validation outcome vocabulary below is shared by those rules. They deliberately
+remain separate. A casing observation is not a vocabulary decision, a preferred
+word is not a domain concept, and a language restriction is not repository
+terminology.
 
-### Form and casing
+The checked-in discovery report is evidence for these decisions:
+[`docs/research/naming-discovery.md`](research/naming-discovery.md). It records
+what the declaration-based discoverer observed in five repositories. It does
+not supply authority. In particular:
 
-Form rules describe how a name is written. Scope selects symbol kinds, and the
-value can assign forms independently to variables, functions, methods, types,
-classes, constants, enum members, and other kinds. Acronym handling is part of
-the form rule, for example treating an acronym as a word when converting a
-name, rather than being an accidental side effect of a casing algorithm.
+`observed != canonical`
 
-Prefixes and suffixes are also form rules. They state the semantic reason and
-scope for a prefix or suffix, such as a private-member marker or a type marker;
-they are not inferred from casing.
+Frequency, prevalence, co-occurrence, casing, and the names of tool options
+can identify a question for a maintainer; they cannot answer it or generate a
+Canon entry. The entries in the example are explicit policy decisions, not
+automatic promotions from the report.
 
-### Vocabulary
+### Naming Canon representation
 
-Vocabulary rules govern words that are generally preferred or forbidden in
-identifiers. A vocabulary entry can map a preferred term to forbidden
-abbreviations or vague alternatives. This answers “which word should be used?”
-without asserting what a domain concept means.
+Each Naming Canon rule has a semantic `value` with the corresponding shape.
+The fields are intentionally domain terms rather than ESLint, Prettier,
+Biome, or other adapter option names.
 
-### Semantics
+#### Form
 
-Semantic naming rules govern the meaning signaled by a name. They can
-distinguish verbs such as `get` for retrieving a known existing value from
-`find` for searching for a matching value. They can also define pluralization
-for collections and boolean naming conventions, such as prefixes that signal
-state, capability, or permission. These rules are scoped by the behavior or
-kind they describe, not by casing alone.
+`form` describes how an identifier is written. It may contain:
 
-### Domain terminology and ontology
+- `casing-by-symbol-kind`, with independent forms for variables, parameters,
+  properties, functions, methods, classes, interfaces, types, enums, and enum
+  members;
+- `acronym-handling`, which records whether an acronym is treated as a word or
+  preserved as an acronym; and
+- `prefixes` and `suffixes`, each scoped to a symbol kind and justified by a
+  semantic role.
 
-Terminology rules define the repository's domain concepts and their canonical
-names. A concept may declare a canonical term, forbidden synonyms, and
-relationships to other concepts. This is different from general vocabulary:
-terminology says what the domain means, while vocabulary says which words are
-preferred in ordinary identifiers.
+Pluralization is also form information when it describes the written shape of
+collection names. It must not be inferred from a frequently observed suffix.
+An unknown or ambiguous form remains unknown; the discoverer's `unknown`
+category is not a recommendation.
+
+#### Lexicon
+
+`lexicon` governs ordinary identifier words without claiming that they name a
+domain concept. Every entry has a `term` and a `strength`:
+
+| Strength      | Meaning                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| `canonical`   | The selected spelling for this vocabulary item.                                               |
+| `preferred`   | The normal choice; an exception can be allowed by the surrounding rule.                       |
+| `discouraged` | Understandable and not automatically a violation, but use the selected alternative when able. |
+| `forbidden`   | A violation in the applicable scope.                                                          |
+
+These strengths must not be collapsed. `replacement`, `scope`, and `reason`
+can explain an entry without changing its strength. A lexicon entry is not a
+concept alias: concept aliases belong under `concepts`.
+
+#### Semantics
+
+`semantics` assigns meaning to names when the implementation behavior is
+known. It is configurable by behavior and scope, not by prevalence. For
+example, the example policy uses `get` for retrieving a known existing value
+and `find` for searching for a match. It distinguishes `remove` (detach while
+retaining the underlying thing) from `delete` (erase it), and gives `create`
+the meaning of introducing a new value. Boolean prefixes communicate the
+meaning of the result: `is` for state, `has` for possession or containment,
+and `can` for capability.
+
+The same spelling may have different guidance in different semantic contexts;
+that is why these decisions do not belong in casing or a flat word list. A
+semantic entry must not assert behavior that discovery did not observe or a
+maintainer did not decide.
+
+#### Concepts
+
+`concepts` contains terminology with a canonical term and explicit
+`allowed-aliases` and `forbidden-aliases`. Organization/shared concepts and
+repository-specific concepts are separate collections. A repository-specific
+concept may use the same word as a shared concept only when its definition and
+scope are still explicit; it is not silently merged with the shared concept.
+
+The report's shared vocabulary is an observation, not a shared concept. A
+maintainer must make the concept decision before adding it here. Product names,
+implementation nouns, and low-frequency terms require the same decision.
+
+#### Constraints
+
+`constraints` contains language and platform knowledge that applies before
+repository vocabulary. Builtin TypeScript knowledge is represented under
+`builtin-language-knowledge`, with its source language and constraint kind;
+reserved or contextual identifiers do not appear as duplicated lexicon
+entries. Repository constraints are separate and may add local restrictions.
+
+Tool configuration keys are not constraints or concepts. For example,
+`printWidth`, `semi`, and `camelcase` may be adapter vocabulary, but they do
+not belong in this Canon. A projection may translate a semantic rule to such a
+key later without making that key authoritative.
+
+### Validation outcomes and unknowns
+
+Conceptual validation has three outcomes:
+
+1. `canonical-or-allowed`: the name matches a canonical, preferred, or
+   discouraged (allowed with guidance) decision, or an explicitly allowed alias
+   in scope; retain the lexicon strength in the report;
+2. `violation`: the name matches a forbidden decision or a builtin language
+   constraint; and
+3. `unknown-requires-decision`: the available Canon and builtin knowledge do
+   not decide the name.
+
+`unknown-requires-decision` is an explicit state. It is neither acceptance nor
+violation: record the unresolved spelling or meaning, ask for a maintainer
+decision, and only then update the Canon. Discovery cannot resolve an unknown
+by selecting the most common spelling, a synonym, or a tool option.
+
+For an LLM applying this policy, first check builtin constraints, then identify
+the symbol's form and behavior, then consult the scoped lexicon and concept
+collections. Report the matching outcome and the reason. If the behavior,
+concept, alias, or form is not covered, report
+`unknown-requires-decision`; do not invent a synonym, infer correctness, or
+promote an observation.
 
 ## Example
 

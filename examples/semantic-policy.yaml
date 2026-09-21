@@ -1,10 +1,14 @@
 policy:
   id: shikitari.example
-  version: 1
-  title: Example TypeScript coding policy
+  version: 2
+  title: Example TypeScript coding and naming policy
   domains:
     - formatting
     - naming
+  naming-evidence:
+    source: docs/research/naming-discovery.md
+    role: observed-evidence-only
+    observed-is-not-canonical: true
   rules:
     - id: formatting.indentation
       domain: formatting
@@ -91,11 +95,12 @@ policy:
         sequence: lf
       intent: Keep text representation consistent across operating systems.
 
-    - id: naming.form.casing
+    - id: naming.form
       domain: naming
       scope:
         languages: [typescript]
-        symbol-kinds: [variable, constant, function, method, class, interface, type, enum, enum-member]
+        symbol-kinds:
+          [variable, constant, parameter, property, function, method, class, interface, type, enum, enum-member]
       requirement:
         action: require
         subject: identifier-form
@@ -111,104 +116,244 @@ policy:
           enum: pascal
           enum-member: upper-snake
         acronym-handling: treat-as-word
-      intent: Make a symbol's role visible from the written form of its name.
-
-    - id: naming.form.prefixes-and-suffixes
-      domain: naming
-      scope:
-        languages: [typescript]
-        symbol-kinds: [property, method, type]
-      requirement:
-        action: require
-        subject: identifier-prefix-or-suffix
-      value:
         prefixes:
-          private-member: underscore
+          - symbol-kinds: [property, method]
+            reason: private-member
+            form: underscore
         suffixes:
-          type-alias: type
-      intent: Mark conventions that communicate ownership or type-level meaning.
+          - symbol-kinds: [type]
+            reason: type-alias
+            form: type
+        pluralization:
+          collection-values: plural
+      intent: Make a symbol's role visible from its written form, including collection plurality.
 
-    - id: naming.vocabulary.terms
+    - id: naming.lexicon
       domain: naming
       scope:
         languages: [typescript]
-        symbol-kinds: [variable, constant, function, method, property, type]
+        symbol-kinds:
+          [variable, constant, parameter, property, function, method, class, interface, type, enum, enum-member]
       requirement:
         action: prefer
-        subject: identifier-vocabulary
+        subject: identifier-lexicon
       value:
         terms:
-          - preferred: repository
-            forbidden: [repo]
-          - preferred: configuration
-            forbidden: [config]
-      intent: Prefer words that remain clear outside their local context.
+          - term: repository
+            strength: canonical
+            reason: Use the full term for a repository.
+          - term: configuration
+            strength: canonical
+            reason: Use the full term for configuration data or behavior.
+          - term: diagnostic
+            strength: preferred
+            reason: Name an observed diagnostic rather than an unspecified message.
+          - term: repo
+            strength: discouraged
+            replacement: repository
+            reason: The abbreviation is understandable but less portable.
+          - term: config
+            strength: discouraged
+            replacement: configuration
+            reason: The abbreviation is understandable but less portable.
+          - term: naming-statistics
+            strength: forbidden
+            replacement: naming-evidence
+            reason: Discovery counts are evidence, not the semantic concept.
+      intent: Prefer vocabulary that remains clear outside its local context while preserving explicit strength.
 
-    - id: naming.semantics.retrieval-verbs
+    - id: naming.semantics
       domain: naming
       scope:
         languages: [typescript]
-        symbol-kinds: [function, method]
-      conditions:
-        any:
-          - field: behavior
-            operator: equals
-            value: retrieve-known-value
-          - field: behavior
-            operator: equals
-            value: search-for-match
+        symbol-kinds: [variable, parameter, property, function, method]
       requirement:
         action: require
-        subject: retrieval-verb
+        subject: semantic-name
       value:
-        terms:
+        verbs:
           - behavior: retrieve-known-value
-            preferred: get
-            forbidden: [find]
+            terms:
+              - term: get
+                strength: preferred
+              - term: find
+                strength: forbidden
           - behavior: search-for-match
-            preferred: find
-            forbidden: [get]
-      intent: Let the verb communicate whether lookup or search semantics apply.
+            terms:
+              - term: find
+                strength: preferred
+              - term: get
+                strength: forbidden
+          - behavior: introduce-new-value
+            terms:
+              - term: create
+                strength: preferred
+          - behavior: detach-without-erasing
+            terms:
+              - term: remove
+                strength: preferred
+              - term: delete
+                strength: forbidden
+          - behavior: erase-permanently
+            terms:
+              - term: delete
+                strength: preferred
+              - term: remove
+                strength: forbidden
+        boolean-prefixes:
+          - meaning: state
+            terms:
+              - term: is
+                strength: preferred
+          - meaning: possession-or-containment
+            terms:
+              - term: has
+                strength: preferred
+          - meaning: capability
+            terms:
+              - term: can
+                strength: preferred
+      intent: Choose a verb or prefix from the behavior it communicates; these are explicit decisions, not frequency-derived synonyms.
 
-    - id: naming.terminology.domain-concepts
+    - id: naming.concepts
       domain: naming
       scope:
         languages: [typescript]
-        symbol-kinds: [variable, constant, function, method, property, type]
+        symbol-kinds: [variable, constant, parameter, property, function, method, class, interface, type, enum]
       requirement:
         action: require
-        subject: domain-terminology
+        subject: domain-concept-terminology
       value:
-        concepts:
-          - id: customer
-            canonical-term: customer
-            forbidden-synonyms: [client]
-          - id: order
-            canonical-term: order
-            forbidden-synonyms: [purchase]
-      intent: Keep domain concepts named consistently across the codebase.
+        organization-shared:
+          - id: repository
+            canonical-term: repository
+            allowed-aliases: []
+            forbidden-aliases: []
+          - id: diagnostic
+            canonical-term: diagnostic
+            allowed-aliases: [diagnostics]
+            forbidden-aliases: []
+        repository-specific:
+          - id: naming-evidence
+            canonical-term: naming evidence
+            allowed-aliases: [discovery evidence]
+            forbidden-aliases: [naming statistics]
+          - id: semantic-policy
+            canonical-term: semantic policy
+            allowed-aliases: [policy model]
+            forbidden-aliases: [tool configuration]
+      intent: Keep shared terminology separate from Shikitari-specific concepts, with aliases decided explicitly.
 
-    - id: naming.semantics.pluralization-and-booleans
+    - id: naming.constraints
       domain: naming
-      scope:
-        languages: [typescript]
-        symbol-kinds: [variable, property, parameter, function, method]
-      conditions:
-        any:
-          - field: value-kind
-            operator: equals
-            value: collection
-          - field: value-kind
-            operator: equals
-            value: boolean
       requirement:
         action: require
-        subject: semantic-name-form
+        subject: naming-constraints
       value:
-        collections:
-          plural: true
-        booleans:
-          state-prefix: is
-          capability-prefix: can
-          permission-prefix: may
-      intent: Make plurality and boolean meaning apparent from the name.
+        builtin-language-knowledge:
+          - language: typescript
+            source: typescript-language
+            constraints:
+              - kind: reserved-identifier
+                outcome: violation
+                identifiers:
+                  [
+                    await,
+                    break,
+                    case,
+                    catch,
+                    class,
+                    const,
+                    continue,
+                    debugger,
+                    default,
+                    delete,
+                    do,
+                    else,
+                    enum,
+                    export,
+                    extends,
+                    false,
+                    finally,
+                    for,
+                    function,
+                    if,
+                    import,
+                    in,
+                    instanceof,
+                    new,
+                    null,
+                    return,
+                    super,
+                    switch,
+                    this,
+                    throw,
+                    true,
+                    try,
+                    typeof,
+                    var,
+                    void,
+                    while,
+                    with,
+                    yield,
+                  ]
+              - kind: typescript-keyword
+                outcome: violation-when-used-in-a-reserved-position
+                identifiers:
+                  [
+                    abstract,
+                    any,
+                    as,
+                    asserts,
+                    bigint,
+                    boolean,
+                    constructor,
+                    declare,
+                    get,
+                    infer,
+                    interface,
+                    keyof,
+                    let,
+                    module,
+                    namespace,
+                    never,
+                    number,
+                    object,
+                    out,
+                    override,
+                    package,
+                    private,
+                    protected,
+                    public,
+                    readonly,
+                    require,
+                    satisfies,
+                    set,
+                    static,
+                    string,
+                    symbol,
+                    type,
+                    undefined,
+                    unique,
+                    unknown,
+                    using,
+                  ]
+            handling: Apply TypeScript grammar rules as builtin knowledge; do not copy these words into the repository lexicon.
+        repository-constraints: []
+      intent: Apply language restrictions independently from repository vocabulary and adapter configuration.
+
+    - id: naming.validation-outcomes
+      domain: naming
+      requirement:
+        action: require
+        subject: naming-validation-outcome
+      value:
+        outcomes:
+          canonical-or-allowed:
+            meaning: The name matches a canonical, preferred, or discouraged decision, or an explicitly allowed alias in scope; retain the lexicon strength in the report.
+          violation:
+            meaning: The name matches a forbidden decision or builtin language constraint.
+          unknown-requires-decision:
+            meaning: The Canon and builtin knowledge do not decide the name.
+            handling: Record the unknown and request a maintainer decision; do not infer, accept, or forbid it.
+      intent: Make unresolved names visible instead of turning missing policy into silent acceptance or rejection.

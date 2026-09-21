@@ -89,6 +89,15 @@ test("discovery serialization is byte-stable", () => {
   assert.equal(discoverAndSerializeNamingEvidence(root), discoverAndSerializeNamingEvidence(root));
 });
 
+test("directory-only ignore rules exclude descendants during direct-file discovery", () => {
+  const root = fixtureRepository();
+  const evidence = discoverNamingEvidence(join(root, "ignored-by-gitignore", "ignored.ts"), {
+    repositoryRoot: root,
+  });
+
+  assert.deepEqual(evidence.observations, []);
+});
+
 test("invalid requested inputs fail clearly", () => {
   assert.throws(
     () => discoverNamingEvidence(join(tmpdir(), "shikitari-path-that-does-not-exist")),

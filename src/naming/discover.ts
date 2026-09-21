@@ -156,7 +156,6 @@ function globPartToRegExp(part: string): string {
 }
 
 function ignoreRuleMatches(rule: IgnoreRule, path: string, isDirectory: boolean): boolean {
-  if (rule.directoryOnly && !isDirectory) return false;
   const pattern = globPartToRegExp(rule.pattern);
   if (!rule.anchored && !rule.pattern.includes("/")) {
     return new RegExp(`(?:^|/)${pattern}(?:$|/)`, "u").test(path);

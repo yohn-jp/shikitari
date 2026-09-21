@@ -1,0 +1,4 @@
+# Governance-adjacent and public-surface files require owner review.
+/.github/ @yohn-jp
+/scripts/validate-*.mjs @yohn-jp
+/package.json @yohn-jp
